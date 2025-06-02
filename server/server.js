@@ -19,7 +19,7 @@ await connectCloudinary();
 //Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://job-portal-app-red.vercel.app/",
     credentials: true,
   })
 );
