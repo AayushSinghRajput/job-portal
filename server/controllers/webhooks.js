@@ -8,15 +8,24 @@ export const clerkWebhooks = async (req, res) => {
     //Create a Svix instance with clerk webhook secret.
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
+    console.log(whook);
+    console.log("This is body request", req.body);
+    console.log("Request header", req.headers);
+
+    const payload = JSON.parse(req.body.toString());
     //verifying headers
-    await whook.verify(JSON.stringify(req.body), {
+    const evt = whook.verify(payload, {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     });
 
+    console.log("Webhook triggered");
+    console.log("Headers:", req.headers);
+    console.log("Body received:", req.body);
+
     //Getting Data from request body
-    const { data, type } = req.body;
+    const { data, type } = evt;
 
     //Switch case for different events
     switch (type) {
@@ -29,7 +38,6 @@ export const clerkWebhooks = async (req, res) => {
           resume: "",
         };
         await User.create(userData);
-        res.json({});
         break;
       }
       case "user.updated": {
@@ -39,19 +47,19 @@ export const clerkWebhooks = async (req, res) => {
           image: data.image_url,
         };
         await User.findByIdAndUpdate(data.id, userData);
-        res.json({});
         break;
       }
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-        res.json({});
         break;
       }
       default:
+        console.log("Unhandled webhook type:", type);
         break;
     }
+    res.status(200).json({ success: true });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: "Webhooks Error" });
+    console.log("Webhook Error:", error);
+    res.status(400).json({ success: false, message: "Webhooks Error" });
   }
 };

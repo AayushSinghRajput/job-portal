@@ -1,19 +1,17 @@
 import React, { useContext, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { assets, jobsApplied } from "../assets/assets";
+import { assets } from "../assets/assets";
 import moment from "moment";
 import Footer from "../components/Footer";
 import { AppContext } from "../context/AppContext";
-import { useAuth, useUser } from "@clerk/clerk-react";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const Applications = () => {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-
   const [isEdit, setIsEdit] = useState(false);
   const [resume, setResume] = useState(null);
   const {
+    token,
     backendUrl,
     userData,
     userApplications,
@@ -24,8 +22,6 @@ const Applications = () => {
     try {
       const formData = new FormData();
       formData.append("resume", resume);
-
-      const token = await getToken();
 
       const { data } = await axios.post(
         backendUrl + "/api/users/update-resume",
@@ -47,10 +43,10 @@ const Applications = () => {
     setResume(null);
   };
   useEffect(() => {
-    if (user) {
+    if (token) {
       fetchUserApplications();
     }
-  }, [user]);
+  }, [token]);
   return (
     <>
       <Navbar />
@@ -85,6 +81,7 @@ const Applications = () => {
                 className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg"
                 href={userData.resume}
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 Resume
               </a>
@@ -114,10 +111,14 @@ const Applications = () => {
           </thead>
           <tbody>
             {userApplications.map((job, index) =>
-              true ? (
+              job?.companyId && job?.jobId ? (
                 <tr key={index}>
                   <td className="py-3 px-4 flex items-center gap-2 border-b">
-                    <img className="w-8 h-8" src={job.companyId.image} alt="" />
+                    <img
+                      className="w-8 h-8"
+                      src={job.companyId.image}
+                      alt={job.companyId.name || "Company"}
+                    />
                     {job.companyId.name}
                   </td>
                   <td className="py-2 px-4 border-b">{job.jobId.title}</td>

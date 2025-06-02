@@ -1,4 +1,4 @@
-import React, { use, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
@@ -10,12 +10,9 @@ import JobCard from "../components/JobCard";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useAuth } from "@clerk/clerk-react";
 
 const ApplyJob = () => {
   const { id } = useParams();
-
-  const { getToken } = useAuth();
 
   const navigate = useNavigate();
 
@@ -24,10 +21,12 @@ const ApplyJob = () => {
   const {
     jobs,
     backendUrl,
+    token,
     userData,
     userApplications,
     fetchUserApplications,
   } = useContext(AppContext);
+
   const fetchJob = async () => {
     try {
       const { data } = await axios.get(backendUrl + `/api/jobs/${id}`);
@@ -50,7 +49,6 @@ const ApplyJob = () => {
         navigate("/applications");
         return toast.error("Upload resume to apply");
       }
-      const token = await getToken();
 
       const { data } = await axios.post(
         backendUrl + "/api/users/apply",

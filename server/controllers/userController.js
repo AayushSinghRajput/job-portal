@@ -2,24 +2,24 @@ import JobApplication from "../models/JobApplication.js";
 import User from "../models/User.js";
 import Job from "../models/Job.js";
 import { v2 as cloudinary } from "cloudinary";
+
 //Get user data
 export const getUserData = async (req, res) => {
-  const userId = req.auth.userId;
-
   try {
-    const user = await User.findById(userId);
+    const user = req.user;
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "User Not Found",
       });
     }
-    res.json({
+    res.status(200).json({
       success: true,
       user,
     });
   } catch (error) {
-    res.json({
+    console.log("Error fetching user:", error);
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -29,7 +29,7 @@ export const getUserData = async (req, res) => {
 //Apply for a job
 export const applyForJob = async (req, res) => {
   const { jobId } = req.body;
-  const userId = req.auth.userId;
+  const userId = req.user._id;
   try {
     const isAlreadyApplied = await JobApplication.find({ jobId, userId });
     if (isAlreadyApplied.length > 0) {
@@ -56,7 +56,7 @@ export const applyForJob = async (req, res) => {
       message: "Applied Successfully...",
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -66,7 +66,7 @@ export const applyForJob = async (req, res) => {
 //Get user applied applications
 export const getUserJobApplications = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.user._id;
     const applications = await JobApplication.find({
       userId,
     })
@@ -84,7 +84,7 @@ export const getUserJobApplications = async (req, res) => {
       applications,
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -94,7 +94,7 @@ export const getUserJobApplications = async (req, res) => {
 //Update user profile(resume)
 export const updateUserResume = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.user._id;
     const resumeFile = req.file;
     const userData = await User.findById(userId);
     if (resumeFile) {
@@ -107,7 +107,7 @@ export const updateUserResume = async (req, res) => {
       message: "Resume Updated",
     });
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
