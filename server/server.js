@@ -19,7 +19,7 @@ await connectCloudinary();
 //Middleware
 app.use(
   cors({
-    origin: "https://job-portal-three-gray.vercel.app/",
+    origin: "https://job-portal-omega-inky.vercel.app/",
     credentials: true,
   })
 );
